@@ -1,0 +1,4 @@
+*-packr.go
+build/
+packrd/
+.idea
