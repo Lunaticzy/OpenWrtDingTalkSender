@@ -9,7 +9,7 @@ all: clean fmt build
 
 .PHONY: build
 build: 
-	@@echo "build binary file"; \
+	@echo "build binary file"; \
  	go generate; \
 	GOOS=linux GOARCH=arm64 go build -trimpath -ldflags $(LDFLAGS) -o build/OpenWrtDingTalkSender_linux_arm64 .; \
 	upx -9 build/OpenWrtDingTalkSender_linux_arm64; \
@@ -17,11 +17,11 @@ build:
 
 .PHONY: fmt
 fmt:
-	@@go fmt ./...
+	@go fmt ./...
 
 .PHONY: clean
 clean: 
-	@@echo "clean"; \
+	@echo "clean"; \
 	rm -rf ./build; \
 	packr2 clean
 
