@@ -21,3 +21,13 @@ CPU：{{ .cpuTemp}} ℃
 
 ```
 
+---
+
+# 联网状态信息
+```
+{{ range $k,$v := .networkState }}
+{{ $k }}: 连接{{ $v }}
+{{ end }}
+```
+
+

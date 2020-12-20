@@ -4,7 +4,7 @@ export GO111MODULE=on
 LDFLAGS := "-s -w"
 
 .PHONY: all
-all: clean fmt build
+all: clean fmt test build
 
 
 .PHONY: build
@@ -25,3 +25,6 @@ clean:
 	rm -rf ./build; \
 	packr2 clean
 
+.PHONY: test
+test:
+	@go test -v

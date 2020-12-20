@@ -14,6 +14,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os/exec"
 	"runtime"
 	"time"
@@ -22,24 +23,25 @@ import (
 //go:generate packr2
 func main() {
 
-	data := make(map[string]string)
+	data := make(map[string]interface{})
 
 	loadAvg, _ := load.Avg()
 	percent, _ := cpu.Percent(3*time.Second, false)
 	memory, _ := mem.VirtualMemory()
 	uptime, _ := host.Uptime()
 
-	data["uptime"] = resolveTime(uptime)
+	data["uptime"] = ResolveTime(uptime)
 	data["memoryUsedPercent"] = fmt.Sprintf("%.2f", memory.UsedPercent)
 	data["loadAvg"] = fmt.Sprintf("%.2f, %.2f, %.2f", loadAvg.Load1, loadAvg.Load5, loadAvg.Load15)
 	data["cpuUsedPercent"] = fmt.Sprintf("%.2f", percent[0])
 	data["cpuTemp"] = GetTemp()
 	data["wanIP"] = GetWanIP()
+	data["networkState"] = CheckNetworkConnect()
 
 	msg := dingtalk.NewMarkdownMessage()
 
 	box := packr.New("templates", "./templates")
-	temp, err := box.FindString("notify.md")
+	temp, err := box.FindString("notify.md.temp")
 	if err != nil {
 		log.Panic(err)
 	}
@@ -121,7 +123,7 @@ const (
 /*
 时间转换函数
 */
-func resolveTime(seconds uint64) (timeString string) {
+func ResolveTime(seconds uint64) (timeString string) {
 
 	if seconds < Minute {
 		timeString = fmt.Sprintf("%d秒", seconds)
@@ -147,6 +149,9 @@ func resolveTime(seconds uint64) (timeString string) {
 	return
 }
 
+/*
+获取wan口IP
+*/
 func GetWanIP() (ip string) {
 
 	cmd := exec.Command("bash", "-c", `ubus call network.interface.wan status`)
@@ -161,4 +166,34 @@ func GetWanIP() (ip string) {
 	}
 
 	return
+}
+
+/*
+检测联网状态
+*/
+
+func CheckNetworkConnect() map[string]string {
+	addressMap := make(map[string]string)
+	results := make(map[string]string)
+
+	addressMap["Google"] = "https://www.google.com"
+	addressMap["Baidu"] = "https://www.baidu.com"
+	addressMap["Github"] = "https://github.com"
+
+	for i := range addressMap {
+		fmt.Println(i)
+		response, err := http.Get(addressMap[i])
+		if err != nil {
+			results[i] = "失败"
+			fmt.Println(err)
+		} else if response.StatusCode != 200 {
+			results[i] = "失败"
+		} else {
+			results[i] = "成功"
+		}
+
+	}
+
+	return results
+
 }
